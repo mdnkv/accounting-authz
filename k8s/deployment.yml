@@ -24,8 +24,20 @@ spec:
             - name: BPL_JVM_THREAD_COUNT
               value: "50"
             - name: APP_DB_URL
-              value: "jdbc:postgresql://accounting-authz-db:5432/acc_authz_db"
+              value: "jdbc:postgresql://accounting-authz-db/acc_authz_db"
             - name: APP_DB_USER
               value: "acc_authz_user"
             - name: APP_DB_PASSWORD
               value: "secret1234"
+          livenessProbe:
+            httpGet:
+              port: 8000
+              path: /actuator/health/liveness
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              port: 8000
+              path: /actuator/health/readiness
+            initialDelaySeconds: 5
+            periodSeconds: 15
