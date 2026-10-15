@@ -17,7 +17,7 @@ public final class UserRoleResponseMapperImpl implements UserRoleResponseMapper 
     @Override
     public UserRoleResponse apply(UserRole userRole) {
         RoleResponse role = this.roleResponseMapper.apply(userRole.getRole());
-        return new UserRoleResponse(userRole.getId(), role, userRole.isCurrent());
+        return new UserRoleResponse(userRole.getId(), userRole.getOrganizationId(), role, userRole.isCurrent());
     }
 
 }

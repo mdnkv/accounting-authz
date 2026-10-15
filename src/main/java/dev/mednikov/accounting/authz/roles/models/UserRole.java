@@ -8,7 +8,7 @@ import org.hibernate.annotations.UuidGenerator;
 import java.util.UUID;
 
 @Entity
-@Table(name = "authz_user_roles")
+@Table(name = "authz_user_roles", uniqueConstraints = {@UniqueConstraint(columnNames = {"organization_id", "user_id"})})
 public class UserRole implements Comparable<UserRole> {
 
     @Id @GeneratedValue @UuidGenerator(style = UuidGenerator.Style.VERSION_7)
@@ -16,6 +16,9 @@ public class UserRole implements Comparable<UserRole> {
 
     @Column(name = "user_id", nullable = false)
     private UUID userId;
+
+    @Column(name = "organization_id", nullable = false)
+    private UUID organizationId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "role_id", nullable = false)
@@ -34,13 +37,13 @@ public class UserRole implements Comparable<UserRole> {
     public final boolean equals(Object o) {
         if (!(o instanceof UserRole userRole)) return false;
 
-        return userId.equals(userRole.userId) && role.equals(userRole.role);
+        return userId.equals(userRole.userId) && organizationId.equals(userRole.organizationId);
     }
 
     @Override
     public int hashCode() {
         int result = userId.hashCode();
-        result = 31 * result + role.hashCode();
+        result = 31 * result + organizationId.hashCode();
         return result;
     }
 
@@ -74,5 +77,13 @@ public class UserRole implements Comparable<UserRole> {
 
     public void setCurrent(boolean current) {
         this.current = current;
+    }
+
+    public UUID getOrganizationId() {
+        return organizationId;
+    }
+
+    public void setOrganizationId(UUID organizationId) {
+        this.organizationId = organizationId;
     }
 }

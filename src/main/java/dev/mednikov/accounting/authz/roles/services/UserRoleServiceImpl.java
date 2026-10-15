@@ -4,6 +4,7 @@ import dev.mednikov.accounting.authz.roles.domain.CreateUserRoleRequest;
 import dev.mednikov.accounting.authz.roles.domain.UpdateCurrentUserRoleRequest;
 import dev.mednikov.accounting.authz.roles.domain.UserRoleResponse;
 import dev.mednikov.accounting.authz.roles.exceptions.RoleDoesNotExistException;
+import dev.mednikov.accounting.authz.roles.exceptions.UserAlreadyMemberOrganization;
 import dev.mednikov.accounting.authz.roles.exceptions.UserRoleDoesNotExistException;
 import dev.mednikov.accounting.authz.roles.mappers.UserRoleResponseMapper;
 import dev.mednikov.accounting.authz.roles.models.Role;
@@ -45,17 +46,15 @@ public class UserRoleServiceImpl implements UserRoleService{
 
     @Override
     public UserRoleResponse createUserRole(CreateUserRoleRequest request) {
-        if (this.userRoleRepository.existsByRoleIdAndUserId(request.roleId(), request.userId())){
-            // TODO throw an exception
-            throw new RuntimeException("User already is associated with this role");
-        }
-
         // Find role
         Role role = this.roleRepository.findById(request.roleId())
                 .orElseThrow(() -> new RoleDoesNotExistException(request.roleId()));
 
         // Check that user is not yet a member of the organization
-        // TODO
+        UUID organizationId = role.getOrganizationId();
+        if (this.userRoleRepository.existsByOrganizationIdAndUserId(organizationId, request.userId())){
+            throw new UserAlreadyMemberOrganization(request.userId(), organizationId);
+        }
 
         // If user has no other roles, set it current
         boolean isCurrent = this.userRoleRepository.countByUserId(request.userId()) == 0;
@@ -65,6 +64,7 @@ public class UserRoleServiceImpl implements UserRoleService{
         userRole.setCurrent(isCurrent);
         userRole.setRole(role);
         userRole.setUserId(request.userId());
+        userRole.setOrganizationId(organizationId);
 
         // Return result
         UserRole result = this.userRoleRepository.save(userRole);
