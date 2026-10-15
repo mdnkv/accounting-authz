@@ -8,6 +8,7 @@ import dev.mednikov.accounting.authz.roles.mappers.RoleResponseMapper;
 import dev.mednikov.accounting.authz.roles.mappers.RoleResponseMapperImpl;
 import dev.mednikov.accounting.authz.roles.mappers.UserRoleResponseMapper;
 import dev.mednikov.accounting.authz.roles.mappers.UserRoleResponseMapperImpl;
+import dev.mednikov.accounting.authz.roles.repositories.RoleRepository;
 import dev.mednikov.accounting.authz.roles.repositories.UserRoleRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,6 +26,7 @@ import static org.mockito.Mockito.*;
 class UserRoleServiceImplTest {
 
     @Mock private UserRoleRepository userRoleRepository;
+    @Mock private RoleRepository roleRepository;
 
     private UserRoleService service;
 
@@ -33,7 +35,7 @@ class UserRoleServiceImplTest {
         AuthorityResponseMapper authorityResponseMapper = new AuthorityResponseMapperImpl();
         RoleResponseMapper roleResponseMapper = new RoleResponseMapperImpl(authorityResponseMapper);
         UserRoleResponseMapper userRoleResponseMapper = new UserRoleResponseMapperImpl(roleResponseMapper);
-        this.service = new UserRoleServiceImpl(userRoleRepository, userRoleResponseMapper);
+        this.service = new UserRoleServiceImpl(roleRepository, userRoleRepository, userRoleResponseMapper);
     }
 
     @Test

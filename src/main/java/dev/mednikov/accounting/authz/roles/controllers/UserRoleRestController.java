@@ -1,9 +1,11 @@
 package dev.mednikov.accounting.authz.roles.controllers;
 
+import dev.mednikov.accounting.authz.roles.domain.CreateUserRoleRequest;
 import dev.mednikov.accounting.authz.roles.domain.UpdateCurrentUserRoleRequest;
 import dev.mednikov.accounting.authz.roles.domain.UserRoleResponse;
 import dev.mednikov.accounting.authz.roles.services.UserRoleService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,6 +21,12 @@ public class UserRoleRestController {
 
     public UserRoleRestController(UserRoleService userRoleService) {
         this.userRoleService = userRoleService;
+    }
+
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public @ResponseBody UserRoleResponse createUserRole (@RequestBody @Valid CreateUserRoleRequest body){
+        return this.userRoleService.createUserRole(body);
     }
 
     @GetMapping("/user/{userId}")
