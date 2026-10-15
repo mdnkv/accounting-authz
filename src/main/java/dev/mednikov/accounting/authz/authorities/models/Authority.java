@@ -15,6 +15,13 @@ public class Authority implements Comparable<Authority>{
     @Column(name = "authority_name", nullable = false, unique = true)
     private String name;
 
+    public Authority(){}
+
+    public Authority(UUID id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
     @Override
     public final boolean equals(Object o) {
         if (!(o instanceof Authority authority)) return false;

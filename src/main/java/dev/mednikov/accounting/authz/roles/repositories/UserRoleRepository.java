@@ -17,4 +17,8 @@ public interface UserRoleRepository extends JpaRepository<UserRole, UUID> {
     @Query("SELECT ur FROM UserRole ur WHERE ur.userId = :userId AND ur.current = true")
     Optional<UserRole> findCurrentForUser (UUID userId);
 
+    long countByUserId(UUID userId);
+
+    boolean existsByRoleIdAndUserId (UUID roleId, UUID userId);
+
 }

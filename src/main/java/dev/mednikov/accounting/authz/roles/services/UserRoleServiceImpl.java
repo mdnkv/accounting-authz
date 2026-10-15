@@ -1,10 +1,14 @@
 package dev.mednikov.accounting.authz.roles.services;
 
+import dev.mednikov.accounting.authz.roles.domain.CreateUserRoleRequest;
 import dev.mednikov.accounting.authz.roles.domain.UpdateCurrentUserRoleRequest;
 import dev.mednikov.accounting.authz.roles.domain.UserRoleResponse;
+import dev.mednikov.accounting.authz.roles.exceptions.RoleDoesNotExistException;
 import dev.mednikov.accounting.authz.roles.exceptions.UserRoleDoesNotExistException;
 import dev.mednikov.accounting.authz.roles.mappers.UserRoleResponseMapper;
+import dev.mednikov.accounting.authz.roles.models.Role;
 import dev.mednikov.accounting.authz.roles.models.UserRole;
+import dev.mednikov.accounting.authz.roles.repositories.RoleRepository;
 import dev.mednikov.accounting.authz.roles.repositories.UserRoleRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
@@ -16,10 +20,12 @@ import java.util.UUID;
 @Service
 public class UserRoleServiceImpl implements UserRoleService{
 
+    private final RoleRepository roleRepository;
     private final UserRoleRepository userRoleRepository;
     private final UserRoleResponseMapper mapper;
 
-    public UserRoleServiceImpl(UserRoleRepository userRoleRepository, UserRoleResponseMapper mapper) {
+    public UserRoleServiceImpl(RoleRepository roleRepository, UserRoleRepository userRoleRepository, UserRoleResponseMapper mapper) {
+        this.roleRepository = roleRepository;
         this.userRoleRepository = userRoleRepository;
         this.mapper = mapper;
     }
@@ -35,6 +41,34 @@ public class UserRoleServiceImpl implements UserRoleService{
     @Override
     public Optional<UserRoleResponse> getCurrentUserRole(UUID userId) {
         return this.userRoleRepository.findCurrentForUser(userId).map(this.mapper);
+    }
+
+    @Override
+    public UserRoleResponse createUserRole(CreateUserRoleRequest request) {
+        if (this.userRoleRepository.existsByRoleIdAndUserId(request.roleId(), request.userId())){
+            // TODO throw an exception
+            throw new RuntimeException("User already is associated with this role");
+        }
+
+        // Find role
+        Role role = this.roleRepository.findById(request.roleId())
+                .orElseThrow(() -> new RoleDoesNotExistException(request.roleId()));
+
+        // Check that user is not yet a member of the organization
+        // TODO
+
+        // If user has no other roles, set it current
+        boolean isCurrent = this.userRoleRepository.countByUserId(request.userId()) == 0;
+
+        // Save
+        UserRole userRole = new UserRole();
+        userRole.setCurrent(isCurrent);
+        userRole.setRole(role);
+        userRole.setUserId(request.userId());
+
+        // Return result
+        UserRole result = this.userRoleRepository.save(userRole);
+        return this.mapper.apply(result);
     }
 
     @Transactional

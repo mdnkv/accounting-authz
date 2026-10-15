@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS authz_user_roles (
     user_id UUID NOT NULL,
     role_id UUID NOT NULL,
     is_current BOOLEAN NOT NULL,
+    UNIQUE(user_id, role_id),
     CONSTRAINT fk_user_role_role
         FOREIGN KEY (role_id)
             REFERENCES authz_roles(id) ON DELETE CASCADE

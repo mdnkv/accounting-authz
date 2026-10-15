@@ -1,6 +1,7 @@
 package dev.mednikov.accounting.authz.shared.controllers;
 
-import dev.mednikov.accounting.authz.roles.exceptions.UserRoleDoesNotExistException;
+import dev.mednikov.accounting.authz.shared.exceptions.ItemAlreadyExistsException;
+import dev.mednikov.accounting.authz.shared.exceptions.ItemDoesNotExistException;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -14,9 +15,15 @@ import java.util.Map;
 @RestControllerAdvice
 public class SharedRestControllerAdvice {
 
-    @ExceptionHandler(UserRoleDoesNotExistException.class)
+    @ExceptionHandler(ItemAlreadyExistsException.class)
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_CONTENT)
+    public String itemAlreadyExistsHandler (ItemAlreadyExistsException ex){
+        return ex.getMessage();
+    }
+
+    @ExceptionHandler(ItemDoesNotExistException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public String userRoleDoesNotExistHandler (UserRoleDoesNotExistException ex){
+    public String itemDoesNotExistHandler (ItemDoesNotExistException ex){
         return ex.getMessage();
     }
 
