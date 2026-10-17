@@ -1,6 +1,8 @@
 package dev.mednikov.accounting.authz.roles.services;
 
+import dev.mednikov.accounting.authz.authorities.models.Authority;
 import dev.mednikov.accounting.authz.roles.domain.CreateUserRoleRequest;
+import dev.mednikov.accounting.authz.roles.domain.CurrentUserRoleResponse;
 import dev.mednikov.accounting.authz.roles.domain.UpdateCurrentUserRoleRequest;
 import dev.mednikov.accounting.authz.roles.domain.UserRoleResponse;
 import dev.mednikov.accounting.authz.roles.exceptions.RoleDoesNotExistException;
@@ -40,8 +42,13 @@ public class UserRoleServiceImpl implements UserRoleService{
     }
 
     @Override
-    public Optional<UserRoleResponse> getCurrentUserRole(UUID userId) {
-        return this.userRoleRepository.findCurrentForUser(userId).map(this.mapper);
+    public CurrentUserRoleResponse getCurrentUserRole(UUID userId) {
+        Optional<UserRole> userRoleResult = this.userRoleRepository.findCurrentForUser(userId);
+        if (userRoleResult.isPresent()){
+            return this.mapToCurrentUserRoleResponse(userRoleResult.get());
+        } else {
+            return new CurrentUserRoleResponse(userId, false, null, null, List.of());
+        }
     }
 
     @Override
@@ -73,7 +80,7 @@ public class UserRoleServiceImpl implements UserRoleService{
 
     @Transactional
     @Override
-    public UserRoleResponse updateCurrentUserRole(UpdateCurrentUserRoleRequest request) {
+    public CurrentUserRoleResponse updateCurrentUserRole(UpdateCurrentUserRoleRequest request) {
         // Find current active
         Optional<UserRole> currentResult = this.userRoleRepository.findCurrentForUser(request.userId());
         // Set current active as not active
@@ -82,7 +89,7 @@ public class UserRoleServiceImpl implements UserRoleService{
             if (current.getId().equals(request.userRoleId())) {
                 // User just wants a current role to be active,
                 // then we just return it
-                return this.mapper.apply(current);
+                return this.mapToCurrentUserRoleResponse(current);
             }
             current.setCurrent(false);
             this.userRoleRepository.save(current);
@@ -98,6 +105,17 @@ public class UserRoleServiceImpl implements UserRoleService{
 
         // TODO emit CurrentUserRoleUpdated event
 
-        return this.mapper.apply(result);
+        return this.mapToCurrentUserRoleResponse(result);
+    }
+
+    CurrentUserRoleResponse mapToCurrentUserRoleResponse (UserRole userRole){
+        List<String> authorities = userRole.getRole().getAuthorities().stream()
+                .map(Authority::getName).toList();
+        return new CurrentUserRoleResponse(
+                userRole.getUserId(),
+                true,
+                userRole.getOrganizationId(),
+                userRole.getRole().getName(),
+                authorities);
     }
 }
