@@ -1,16 +1,15 @@
 package dev.mednikov.accounting.authz.roles.controllers;
 
 import dev.mednikov.accounting.authz.roles.domain.CreateUserRoleRequest;
+import dev.mednikov.accounting.authz.roles.domain.CurrentUserRoleResponse;
 import dev.mednikov.accounting.authz.roles.domain.UpdateCurrentUserRoleRequest;
 import dev.mednikov.accounting.authz.roles.domain.UserRoleResponse;
 import dev.mednikov.accounting.authz.roles.services.UserRoleService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -35,9 +34,8 @@ public class UserRoleRestController {
     }
 
     @GetMapping("/current/{userId}")
-    public ResponseEntity<UserRoleResponse> getCurrentUserRole (@PathVariable UUID userId){
-        Optional<UserRoleResponse> result = this.userRoleService.getCurrentUserRole(userId);
-        return ResponseEntity.of(result);
+    public @ResponseBody CurrentUserRoleResponse getCurrentUserRole (@PathVariable UUID userId){
+        return this.userRoleService.getCurrentUserRole(userId);
     }
 
     @PostMapping("/current")
