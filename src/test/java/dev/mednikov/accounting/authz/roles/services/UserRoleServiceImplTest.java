@@ -4,6 +4,7 @@ import dev.mednikov.accounting.authz.authorities.mappers.AuthorityResponseMapper
 import dev.mednikov.accounting.authz.authorities.mappers.AuthorityResponseMapperImpl;
 import dev.mednikov.accounting.authz.authorities.models.Authority;
 import dev.mednikov.accounting.authz.roles.domain.CreateUserRoleRequest;
+import dev.mednikov.accounting.authz.roles.domain.CurrentUserRoleResponse;
 import dev.mednikov.accounting.authz.roles.domain.UpdateCurrentUserRoleRequest;
 import dev.mednikov.accounting.authz.roles.exceptions.UserAlreadyMemberOrganization;
 import dev.mednikov.accounting.authz.roles.exceptions.UserRoleDoesNotExistException;
@@ -12,6 +13,7 @@ import dev.mednikov.accounting.authz.roles.mappers.RoleResponseMapperImpl;
 import dev.mednikov.accounting.authz.roles.mappers.UserRoleResponseMapper;
 import dev.mednikov.accounting.authz.roles.mappers.UserRoleResponseMapperImpl;
 import dev.mednikov.accounting.authz.roles.models.Role;
+import dev.mednikov.accounting.authz.roles.models.UserRole;
 import dev.mednikov.accounting.authz.roles.repositories.RoleRepository;
 import dev.mednikov.accounting.authz.roles.repositories.UserRoleRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -74,6 +76,54 @@ class UserRoleServiceImplTest {
         when(userRoleRepository.findById(userRoleId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.updateCurrentUserRole(request)).isInstanceOf(UserRoleDoesNotExistException.class);
+
+    }
+
+    @Test
+    void getCurrentUserRole_hasRoleTest(){
+        UUID userId = UUID.randomUUID();
+        UUID organizationId = UUID.randomUUID();
+
+        Set<Authority> authorities = Set.of(
+                new Authority(UUID.randomUUID(), "journals:create"),
+                new Authority(UUID.randomUUID(), "journals:update"),
+                new Authority(UUID.randomUUID(), "journals:view"),
+                new Authority(UUID.randomUUID(), "currencies:create"),
+                new Authority(UUID.randomUUID(), "currencies:update"),
+                new Authority(UUID.randomUUID(), "currencies:view")
+        );
+
+        Role role = new Role();
+        role.setId(UUID.randomUUID());
+        role.setName("Administrator");
+        role.setOrganizationId(organizationId);
+        role.setAuthorities(authorities);
+
+        UserRole userRole = new UserRole();
+        userRole.setUserId(userId);
+        userRole.setOrganizationId(organizationId);
+        userRole.setCurrent(true);
+        userRole.setRole(role);
+
+        when(userRoleRepository.findCurrentForUser(userId)).thenReturn(Optional.of(userRole));
+
+        CurrentUserRoleResponse result = service.getCurrentUserRole(userId);
+        assertThat(result).isNotNull()
+                .hasFieldOrPropertyWithValue("hasRole", true)
+                .hasFieldOrPropertyWithValue("roleName", "Administrator")
+                .hasFieldOrProperty("authorities")
+                .hasFieldOrPropertyWithValue("organizationId", organizationId);
+
+    }
+
+    @Test
+    void getCurrentUserRole_hasNotRoleTest(){
+        UUID userId = UUID.randomUUID();
+        when(userRoleRepository.findCurrentForUser(userId)).thenReturn(Optional.empty());
+
+        CurrentUserRoleResponse result = service.getCurrentUserRole(userId);
+        assertThat(result).isNotNull()
+                .hasFieldOrPropertyWithValue("hasRole", false);
 
     }
 
