@@ -80,7 +80,7 @@ public class UserRoleServiceImpl implements UserRoleService{
 
     @Transactional
     @Override
-    public UserRoleResponse updateCurrentUserRole(UpdateCurrentUserRoleRequest request) {
+    public CurrentUserRoleResponse updateCurrentUserRole(UpdateCurrentUserRoleRequest request) {
         // Find current active
         Optional<UserRole> currentResult = this.userRoleRepository.findCurrentForUser(request.userId());
         // Set current active as not active
@@ -89,7 +89,7 @@ public class UserRoleServiceImpl implements UserRoleService{
             if (current.getId().equals(request.userRoleId())) {
                 // User just wants a current role to be active,
                 // then we just return it
-                return this.mapper.apply(current);
+                return this.mapToCurrentUserRoleResponse(current);
             }
             current.setCurrent(false);
             this.userRoleRepository.save(current);
@@ -105,7 +105,7 @@ public class UserRoleServiceImpl implements UserRoleService{
 
         // TODO emit CurrentUserRoleUpdated event
 
-        return this.mapper.apply(result);
+        return this.mapToCurrentUserRoleResponse(result);
     }
 
     CurrentUserRoleResponse mapToCurrentUserRoleResponse (UserRole userRole){

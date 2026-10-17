@@ -12,7 +12,7 @@ public interface UserRoleService {
 
     UserRoleResponse createUserRole (CreateUserRoleRequest request);
 
-    UserRoleResponse updateCurrentUserRole (UpdateCurrentUserRoleRequest request);
+    CurrentUserRoleResponse updateCurrentUserRole (UpdateCurrentUserRoleRequest request);
 
     List<UserRoleResponse> getUserRoles (UUID userId);
 

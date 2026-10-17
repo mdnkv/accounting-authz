@@ -39,7 +39,7 @@ public class UserRoleRestController {
     }
 
     @PostMapping("/current")
-    public @ResponseBody UserRoleResponse setCurrentUserRole (@RequestBody @Valid UpdateCurrentUserRoleRequest body){
+    public @ResponseBody CurrentUserRoleResponse setCurrentUserRole (@RequestBody @Valid UpdateCurrentUserRoleRequest body){
         return this.userRoleService.updateCurrentUserRole(body);
     }
 

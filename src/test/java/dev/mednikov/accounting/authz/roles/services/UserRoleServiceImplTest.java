@@ -80,6 +80,104 @@ class UserRoleServiceImplTest {
     }
 
     @Test
+    void updateCurrentUserRole_noCurrentUserRoleTest(){
+        UUID userId = UUID.randomUUID();
+        UUID userRoleId = UUID.randomUUID();
+        UUID organizationId = UUID.randomUUID();
+
+        Set<Authority> authorities = Set.of(
+                new Authority(UUID.randomUUID(), "journals:create"),
+                new Authority(UUID.randomUUID(), "journals:update"),
+                new Authority(UUID.randomUUID(), "journals:view"),
+                new Authority(UUID.randomUUID(), "currencies:create"),
+                new Authority(UUID.randomUUID(), "currencies:update"),
+                new Authority(UUID.randomUUID(), "currencies:view")
+        );
+
+        Role role = new Role();
+        role.setId(UUID.randomUUID());
+        role.setName("Administrator");
+        role.setOrganizationId(organizationId);
+        role.setAuthorities(authorities);
+
+        UserRole userRole = new UserRole();
+        userRole.setUserId(userId);
+        userRole.setOrganizationId(organizationId);
+        userRole.setCurrent(true);
+        userRole.setRole(role);
+        userRole.setId(userRoleId);
+
+        UpdateCurrentUserRoleRequest request = new UpdateCurrentUserRoleRequest(userId, userRoleId);
+
+        when(userRoleRepository.findCurrentForUser(userId)).thenReturn(Optional.empty());
+        when(userRoleRepository.findById(userRoleId)).thenReturn(Optional.of(userRole));
+        when(userRoleRepository.save(any(UserRole.class))).thenReturn(userRole);
+
+        CurrentUserRoleResponse result = service.updateCurrentUserRole(request);
+        assertThat(result).isNotNull()
+                .hasFieldOrPropertyWithValue("hasRole", true)
+                .hasFieldOrPropertyWithValue("roleName", "Administrator")
+                .hasFieldOrProperty("authorities")
+                .hasFieldOrPropertyWithValue("organizationId", organizationId);
+    }
+
+    @Test
+    void updateCurrentUserRole_hasCurrentUserRoleTest(){
+        UUID userId = UUID.randomUUID();
+        UUID userRoleId = UUID.randomUUID();
+        UUID oldOrganizationId = UUID.randomUUID();
+        UUID newOrganizationId = UUID.randomUUID();
+
+        Set<Authority> authorities = Set.of(
+                new Authority(UUID.randomUUID(), "journals:create"),
+                new Authority(UUID.randomUUID(), "journals:update"),
+                new Authority(UUID.randomUUID(), "journals:view"),
+                new Authority(UUID.randomUUID(), "currencies:create"),
+                new Authority(UUID.randomUUID(), "currencies:update"),
+                new Authority(UUID.randomUUID(), "currencies:view")
+        );
+
+        Role oldRole = new Role();
+        oldRole.setId(UUID.randomUUID());
+        oldRole.setName("Administrator");
+        oldRole.setOrganizationId(oldOrganizationId);
+        oldRole.setAuthorities(authorities);
+
+        UserRole oldUserRole = new UserRole();
+        oldUserRole.setUserId(userId);
+        oldUserRole.setOrganizationId(oldOrganizationId);
+        oldUserRole.setCurrent(true);
+        oldUserRole.setRole(oldRole);
+        oldUserRole.setId(UUID.randomUUID());
+
+        Role newRole = new Role();
+        newRole.setId(UUID.randomUUID());
+        newRole.setName("Accountant");
+        newRole.setOrganizationId(newOrganizationId);
+        newRole.setAuthorities(authorities);
+
+        UserRole newUserRole = new UserRole();
+        newUserRole.setUserId(userId);
+        newUserRole.setOrganizationId(newOrganizationId);
+        newUserRole.setCurrent(false);
+        newUserRole.setRole(newRole);
+        newUserRole.setId(userRoleId);
+
+        UpdateCurrentUserRoleRequest request = new UpdateCurrentUserRoleRequest(userId, userRoleId);
+
+        when(userRoleRepository.findCurrentForUser(userId)).thenReturn(Optional.of(oldUserRole));
+        when(userRoleRepository.findById(userRoleId)).thenReturn(Optional.of(newUserRole));
+        when(userRoleRepository.save(any(UserRole.class))).thenReturn(newUserRole);
+
+        CurrentUserRoleResponse result = service.updateCurrentUserRole(request);
+        assertThat(result).isNotNull()
+                .hasFieldOrPropertyWithValue("hasRole", true)
+                .hasFieldOrPropertyWithValue("roleName", "Accountant")
+                .hasFieldOrProperty("authorities")
+                .hasFieldOrPropertyWithValue("organizationId", newOrganizationId);
+    }
+
+    @Test
     void getCurrentUserRole_hasRoleTest(){
         UUID userId = UUID.randomUUID();
         UUID organizationId = UUID.randomUUID();
