@@ -28,8 +28,8 @@ public class UserRoleRestController {
         return this.userRoleService.createUserRole(body);
     }
 
-    @GetMapping("/user/{userId}")
-    public @ResponseBody List<UserRoleResponse> getUserRoles (@PathVariable UUID userId){
+    @GetMapping("/user")
+    public @ResponseBody List<UserRoleResponse> getUserRoles (@RequestParam UUID userId){
         return this.userRoleService.getUserRoles(userId);
     }
 
