@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: accounting-authz-config
+  labels:
+    app: accounting-authz
+data:
+  application.yml: |
+    spring:
+      datasource:
+        url: jdbc:postgresql://accounting-authz-db/acc_authz_db
+        username: acc_authz_user
+        password: secret1234
+      flyway:
+        username: acc_authz_user
+        password: secret1234

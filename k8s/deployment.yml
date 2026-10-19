@@ -23,12 +23,9 @@ spec:
           env:
             - name: BPL_JVM_THREAD_COUNT
               value: "50"
-            - name: APP_DB_URL
-              value: "jdbc:postgresql://accounting-authz-db/acc_authz_db"
-            - name: APP_DB_USER
-              value: "acc_authz_user"
-            - name: APP_DB_PASSWORD
-              value: "secret1234"
+          volumeMounts:
+            - mountPath: /workspace/config
+              name: accounting-authz-config-volume
           livenessProbe:
             httpGet:
               port: 8000
@@ -41,3 +38,7 @@ spec:
               path: /actuator/health/readiness
             initialDelaySeconds: 5
             periodSeconds: 15
+      volumes:
+        - name: accounting-authz-config-volume
+          configMap:
+            name: accounting-authz-config
