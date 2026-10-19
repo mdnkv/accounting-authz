@@ -10,6 +10,11 @@ import dev.mednikov.accounting.authz.roles.exceptions.RoleDoesNotExistException;
 import dev.mednikov.accounting.authz.roles.mappers.RoleResponseMapper;
 import dev.mednikov.accounting.authz.roles.models.Role;
 import dev.mednikov.accounting.authz.roles.repositories.RoleRepository;
+import dev.mednikov.accounting.authz.shared.domain.PaginationRequest;
+import dev.mednikov.accounting.authz.shared.domain.PaginationResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -79,11 +84,10 @@ public class RoleServiceImpl implements RoleService{
     }
 
     @Override
-    public List<RoleResponse> getRolesForOrganization(UUID organizationId) {
-        return this.roleRepository
-                .findAllByOrganizationId(organizationId)
-                .stream()
-                .map(this.mapper)
-                .toList();
+    public PaginationResponse<RoleResponse> getRoles(UUID organizationId, PaginationRequest request) {
+        Pageable pageable = PageRequest.of(request.page() - 1, request.count(), request.sortingOrder().getSort());
+        Page<Role> result = this.roleRepository.findAllByOrganizationId(organizationId, pageable);
+        List<RoleResponse> data = result.getContent().stream().map(this.mapper).toList();
+        return new PaginationResponse<>(data, result.getTotalPages(), result.getTotalElements());
     }
 }
